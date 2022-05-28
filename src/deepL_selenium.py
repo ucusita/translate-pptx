@@ -74,8 +74,10 @@ class seleniumDeepL(seleniumDefault):
            This function gets that button.
         """
 
-        button_css = ' div.lmt__target_toolbar__copy button' 
-        button = self.driver.find_element_by_css_selector(button_css)
+        #button_css = ' div.lmt__target_toolbar__copy button'         
+        #button = self.driver.find_element_by_css_selector(button_css)
+        
+        button = self.driver.find_element_by_xpath('//button[@aria-describedby="CopyButton"]')
         # attribute "_dl-attr should be onClick: $0.doCopy"
         return button
 
@@ -193,6 +195,8 @@ class seleniumDeepL(seleniumDefault):
                 'joiner':joiner,
                 'original_batch':batch
             })
+
+            #print ('batch_corpus : ',format(batch_corpus))
             
             batch = []
             batch_length = 0
@@ -216,16 +220,33 @@ class seleniumDeepL(seleniumDefault):
             logger.warning('({}/{}) - nb translation iteration.'.format(idx_batch, nb_batch - 1)) 
 
             self.add_source_text(batch['text'])
+            logger.warning('len batch text : {}'.format(len(batch['text'])))
+            #print('batch text : ', batch['text'])            
             self.sleep(sleep=time_to_translate, message='Waiting for translation')
         
             full_translation = self.get_translation(sleep_before_click_to_clipboard=3)
-            separate = full_translation.split(batch['joiner'])
-        
-            assertion_message = 'The number of sentences in the translation does not match the original number of sentences'
-            assert len(separate)==batch['size'], assertion_message
-            # Solution could be : 1) Use another joiner 2) not to use batches
+            print('len full_translation: ', len(full_translation))
+            #full_translation = full_translation[:-84]
+            print('full_translation: ',full_translation)
+            
+            print('len batch joiner : ', len(batch['joiner']))
+            print('********************************************************************************')
+            print('********************************************************************************')
+            separate = full_translation.split('\r\n____\r\n')
+            print('separate: ', separate)
+            if len(separate) == 1:
+                separate = full_translation.split(batch['joiner'])
+            print('len separate: ', len(separate))
+            print('separate: ', separate)
 
+            #assertion_message = 'The number of sentences in the translation does not match the original number of sentences'
+            #assert len(separate)==batch['size'], assertion_message
+            # Solution could be : 1) Use another joiner 2) not to use batches
+        
+            logger.warning('len batch["original_batch"] {}'.format(len(batch['original_batch'])))
             for idx_trad, sentence in enumerate(batch['original_batch']):
+                #logger.warning ('idx_trad: ', idx_trad)
+                #logger.warning ('separate: ', separate[idx_trad] )
                 translation = separate[idx_trad]
                 self.translations[sentence] = translation
                 self.print_translation(sentence, translation)
@@ -238,8 +259,8 @@ class seleniumDeepL(seleniumDefault):
 
 
     def run_translation(
-        self, corpus='Hello, World!', destination_language='en', joiner='\n____\n', quit_web=True, 
-        time_to_translate=10, time_batch_rest=2, raise_error=False,
+        self, corpus='Hello, World!', destination_language='es', joiner='\n____\n', quit_web=True, 
+        time_to_translate=30, time_batch_rest=2, raise_error=True,
         load_at=None, store_at=None ,load_and_store_at=None):
         """ THE FUNCTION. This is the one which is called by final user and sets (almost) all the other things.
         
@@ -269,6 +290,8 @@ class seleniumDeepL(seleniumDefault):
         
         # Prepare batched corpus
         corpus_batch = self.prepare_batch_corpus(corpus, joiner)
+        print('len joiner: ', len(joiner))
+
         logger.warning('Initial corpus is composed of {} sentences'.format(len(corpus)))
         logger.warning('Formated corpus is composed of {} batches'.format(len(corpus_batch)))
         

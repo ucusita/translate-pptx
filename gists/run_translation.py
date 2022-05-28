@@ -11,7 +11,7 @@ def translate_sentence(sentence):
     driver = webdriver.Chrome(driver_path)
 
     # Reach the deepL website
-    deepl_url = 'https://www.deepl.com/fr/translator'
+    deepl_url = 'https://www.deepl.com/en/translator'
     driver.get(deepl_url)
 
     # Get thie inupt_area 
@@ -26,7 +26,8 @@ def translate_sentence(sentence):
     time.sleep(2)
 
     # Get copybutton and click on it
-    button_css = ' div.lmt__target_toolbar__copy button' 
+    # button_css = ' div.lmt__target_toolbar__copy button' 
+    button_css = ' div.lmt__target_toolbar button' 
     button = driver.find_element_by_css_selector(button_css)
     button.click()
 
